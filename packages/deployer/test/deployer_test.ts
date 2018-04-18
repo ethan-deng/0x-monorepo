@@ -19,14 +19,14 @@ describe('#Deployer', () => {
     const compilerOpts: CompilerOptions = {
         artifactsDir,
         contractsDir,
-        networkId: constants.networkId,
-        optimizerEnabled: constants.optimizerEnabled,
-        specifiedContracts: new Set(constants.specifiedContracts),
+        versionName: constants.defaultVersionName,
+        contracts: constants.contracts,
     };
     const compiler = new Compiler(compilerOpts);
     const deployerOpts = {
         artifactsDir,
         networkId: constants.networkId,
+        versionName: constants.defaultVersionName,
         provider,
         defaults: {
             gasPrice: constants.gasPrice,
@@ -55,8 +55,7 @@ describe('#Deployer', () => {
             const exchangeContractData: ContractNetworkData = exchangeArtifact.networks[constants.networkId];
             const exchangeAddress = exchangeContractInstance.address;
             expect(exchangeAddress).to.not.equal(undefined);
-            expect(exchangeContractData.address).to.equal(undefined);
-            expect(exchangeContractData.constructor_args).to.equal(undefined);
+            expect(exchangeContractData).to.equal(undefined);
         });
     });
     describe('#deployAndSaveAsync', () => {
@@ -71,7 +70,7 @@ describe('#Deployer', () => {
             const exchangeContractData: ContractNetworkData = exchangeArtifact.networks[constants.networkId];
             const exchangeAddress = exchangeContractInstance.address;
             expect(exchangeAddress).to.be.equal(exchangeContractData.address);
-            expect(constructor_args).to.be.equal(exchangeContractData.constructor_args);
+            expect(constructor_args).to.be.equal(exchangeContractData.constructorArgs);
         });
     });
 });

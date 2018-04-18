@@ -8,25 +8,26 @@ import { ContractData } from './types';
 export const collectContractsData = (artifactsPath: string, sourcesPath: string, networkId: number) => {
     const artifactsGlob = `${artifactsPath}/**/*.json`;
     const artifactFileNames = glob.sync(artifactsGlob, { absolute: true });
-    const contractsDataIfExists: Array<ContractData | {}> = _.map(artifactFileNames, artifactFileName => {
+    const contractsData: ContractData[] = [];
+    _.forEach(artifactFileNames, artifactFileName => {
         const artifact = JSON.parse(fs.readFileSync(artifactFileName).toString());
-        const sources = artifact.networks[networkId].sources;
-        const contractName = artifact.contract_name;
-        // We don't compute coverage for dependencies
-        const sourceCodes = _.map(sources, (source: string) => fs.readFileSync(source).toString());
-        if (_.isUndefined(artifact.networks[networkId])) {
-            throw new Error(`No ${contractName} artifacts found for networkId ${networkId}`);
+        const versionNames = _.keys(artifact.versions);
+        for (const versionName of versionNames) {
+            const version = artifact.versions[versionName];
+            const sources = _.keys(version.sources);
+            const contractName = artifact.contractName;
+            // We don't compute coverage for dependencies
+            const sourceCodes = _.map(sources, (source: string) => fs.readFileSync(source).toString());
+            const contractData = {
+                sourceCodes,
+                sources,
+                bytecode: version.compilerOutput.evm.bytecode.object,
+                sourceMap: version.compilerOutput.evm.bytecode.sourceMap,
+                runtimeBytecode: version.compilerOutput.evm.deployedBytecode.object,
+                sourceMapRuntime: version.compilerOutput.evm.deployedBytecode.sourceMap,
+            };
+            contractsData.push(contractData);
         }
-        const contractData = {
-            sourceCodes,
-            sources,
-            sourceMap: artifact.networks[networkId].source_map,
-            sourceMapRuntime: artifact.networks[networkId].source_map_runtime,
-            runtimeBytecode: artifact.networks[networkId].runtime_bytecode,
-            bytecode: artifact.networks[networkId].bytecode,
-        };
-        return contractData;
     });
-    const contractsData = _.filter(contractsDataIfExists, contractData => !_.isEmpty(contractData)) as ContractData[];
     return contractsData;
 };
