@@ -233,4 +233,14 @@ contract MixinExchangeCore is
         isError = errPercentageTimes1000000 > 1000;
         return isError;
     }
+
+     /// @dev Calculates the sum of values already filled and cancelled for a given order.
+     /// @param orderHash The Keccak-256 hash of the given order.
+     /// @return Sum of values already filled and cancelled.
+     function getUnavailableTakerTokenAmount(bytes32 orderHash)
+         public view
+         returns (uint256)
+     {
+         return filled[orderHash];
+     }
 }
